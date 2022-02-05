@@ -1,6 +1,8 @@
 """
 code for gererating our models and any algorithms used in anomaly detection
 """ 
+import numpy as np
+import pandas as pd
 
 
 
@@ -42,6 +44,24 @@ def eval_arima(X,arima_order,conf,n):
     rmse = mean_squared_error(test, predictions, squared=False)
     return model_fit.aic,model_fit,test,predictions,anomalies,upperLim,lowerLim
 
+"""
+Takes in dataframe, returns median and median absolute deviation
+"""
+def MAD(data, window_size=100, feature='1->2Pkts'):
+    X = data[feature]
+
+    mad = lambda x: np.median(np.fabs(x - np.median(x)))
+
+    window = window_size
+    median = []
+    m = []
+
+    for i in range(len(X) - window):
+        subset = X[i:i+window]
+        median = median + [np.median(subset)]
+        m = m + [mad(subset)]
+    
+    return (median, m) 
 
 
 def eval_models(dataset, p_vals,q_vals,d_vals, conf, n):
