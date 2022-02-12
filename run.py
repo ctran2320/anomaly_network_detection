@@ -14,7 +14,7 @@ from time import time
 #from metrics import 
 
 """
-Sets up all the directories that may have been in the .gitignore
+Sets up all the directories that may have been in the .gitignore or start off empty
 """
 def init_():
     if not os.path.isdir('data/'):
