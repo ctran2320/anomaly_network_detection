@@ -2,19 +2,15 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
-from os import listdir, join
+from os import listdir
+from os.path import join
 import seaborn as sns
 import numpy as np
 import sys
 
-from etl import clean_df
 from train import MAD
 
-"""
-Creates a correlation matrix for the features
-"""
-def plot_correlation(data_filename, outdir, filename="correlation_matrix.png"):
-    raise NotImplementedError()
+plt.rcParams["figure.figsize"] = (15,10)
 
 """
 Creates a time plot of the number of packets being sent per second and where packets are dropped if file exists
@@ -24,14 +20,14 @@ data_path: path with folder of loss logs and packet data
 outdir: directry to put the graph
 filename: name of the graph image to save
 """
-def plot_timeseries(conditions, data_path, outdir, filename="timeseries.png"):
+def plot_timeseries(conditions, data_path='../test/EDA_data', outdir='../notebooks/figures', filename="timeseries.png"):
     # list the packet data files
     raw_data_path = join(data_path, 'packet_data')
-    raw_files_loss = [join(raw_data_path, f) for f in listdir(raw_data_path)]
+    raw_files = [join(raw_data_path, f) for f in listdir(raw_data_path)]
 
     # packet drop data
-    raw_data_path = join(data_path, 'loss_logs')
-    raw_files = [join(raw_data_path, f) for f in listdir(raw_data_path)]
+    raw_data_path = join(data_path, 'losslog')
+    raw_files_loss = [join(raw_data_path, f) for f in listdir(raw_data_path)]
 
     # associates conditions with filenames
     metrics = []
@@ -52,32 +48,39 @@ def plot_timeseries(conditions, data_path, outdir, filename="timeseries.png"):
     data = pd.read_csv(f)
     data_drop = pd.read_csv(f_drop, header=None)
     data_drop.columns = ['drop', 'Time', 'IP1', 'Port1', 'IP2', 'Port2', '?']
-    clean = clean_df(data)
+    clean = data[data['IP1'] == data['IP1'].mode()[0]] 
     plt.plot(clean['1->2Pkts'])
 
     port = data_drop['Port1']
     time = data_drop['Time'] - data['Time'].min()
     max_pkts = clean['1->2Pkts'].max()
 
+    plt.vlines(180, 0, max_pkts, colors='C3')
+
     for i in range(len(time)):
         # confirmation (computer 2)
         if port[i] == 5001:
-            plt.vlines(time[i], 0, max_pkts, colors='C1', alpha=0.3)
+            plt.vlines(time[i], 0, max_pkts//25, colors='C1', alpha=0.5)
             pass
         # data (computer 1)
         else:
-            plt.vlines(time[i], 0, max_pkts, colors='C2', alpha=0.3)
+            plt.vlines(time[i], 0, max_pkts//25, colors='C2', alpha=0.5)
             pass
-
-    plt.vlines(180, 0, max_pkts, colors='C3')
 
     plt.title(f'packets per second, conditions: {conditions}')
     plt.ylabel('packets per second')
     plt.xlabel('time')
 
-    # plt.legend()
+    plt.legend(['packets 1->2', 'condition shift', '2->1 packet drop', '1->2 packet drop'])
     # saves graph to directory
     plt.savefig(os.path.join(outdir, filename))
+
+
+"""
+Plots the figures related to MAD. 
+Plots 1->2 pkts with median overlayed
+Plots transformation to timeseries with threshold and anomalies
+Plots 
 
 def plot_MAD(conditions, data_path, outdir, filename=['median.png', 'MAD.png']):
     # list the packet data files
@@ -125,3 +128,4 @@ def plot_MAD(conditions, data_path, outdir, filename=['median.png', 'MAD.png']):
     plt.xlabel('time')    
     plt.legend()
     plt.savefig(join(outdir, filename[1]))
+"""
