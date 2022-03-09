@@ -6,7 +6,7 @@ import os
 from os.path import join
 
 # read config
-with open('../config/etl-params.json') as config_json:
+with open('config/etl-params.json') as config_json:
     config = config_json.read()
 # config is now a dictionary
 config = json.loads(config)

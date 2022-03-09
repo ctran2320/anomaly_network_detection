@@ -9,7 +9,7 @@ import numpy as np
 import sys
 import json
 
-with open('../config/eda-params.json') as eda_json:
+with open('config/eda-params.json') as eda_json:
     eda_config = eda_json.read()
 eda_config = json.loads(eda_config)
 

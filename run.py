@@ -62,10 +62,10 @@ preps the data and features, all the data in the out should be ready to be input
 data: a list of csv files to stitch together
 data_path: folder all of the data csvs are at
 """
-def etl_(data):
+def etl_(data, data_path, temp_path, out_path, log_path, filename):
     '''etl target logic. Generates temporary files that are cleaned.'''
     ## dump processed data into temp folder
-    return stitch_data(data)
+    return stitch_data(data, data_path=data_path, temp_path=temp_path, out_path=out_path, log_path=log_path, filename=filename)
 
 """
 generates the figures used in the report, does not include metrics
@@ -99,11 +99,14 @@ def main(targets):
         save_data(data, **data_config)
         """
         data = ['40_40_5000_a.csv', '40_40_5000_b.csv', '40_40_5000_c.csv','40_40_5000_d.csv', '40_40_5000_e.csv','40_40_5000_m.csv','40_5000_160_1250_a.csv', '40_40_5000_f.csv', '40_40_5000_g.csv', '40_5000_160_1250_b.csv','40_40_5000_h.csv', '40_40_5000_i.csv', '40_5000_160_1250_c.csv', '40_40_5000_j.csv', '40_5000_160_1250_d.csv','40_40_5000_k.csv','40_40_5000_l.csv', '40_5000_160_1250_e.csv']
-        etl_(data)
+        etl_(data, config['raw_path'], 
+                   config['temp_path'], 
+                   config['out_path'],
+                   config['log_path'])
         
     if 'eda' in targets:
         conditions = eda_config['conditions'] 
-        eda_(conditions)
+        eda_(conditions, )
 
     if 'train' in targets:
         filename = ensemble_config['data']
