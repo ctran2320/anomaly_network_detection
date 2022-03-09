@@ -7,8 +7,11 @@ from os.path import join
 import seaborn as sns
 import numpy as np
 import sys
+import json
 
-from train import MAD
+with open('../config/eda-params.json') as eda_json:
+    eda_config = eda_json.read()
+eda_config = json.loads(eda_config)
 
 plt.rcParams["figure.figsize"] = (15,10)
 
@@ -20,7 +23,7 @@ data_path: path with folder of loss logs and packet data
 outdir: directry to put the graph
 filename: name of the graph image to save
 """
-def plot_timeseries(conditions, data_path='../test/EDA_data', outdir='../notebooks/figures', filename="timeseries.png"):
+def plot_timeseries(conditions, data_path=eda_config['data_path'], outdir=eda_config['outdir'], filename=eda_config['filename']):
     # list the packet data files
     raw_data_path = join(data_path, 'packet_data')
     raw_files = [join(raw_data_path, f) for f in listdir(raw_data_path)]

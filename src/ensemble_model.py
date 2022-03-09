@@ -9,6 +9,10 @@ import numpy as np
 class Ensemble():
     """
     Final Model that takes in data and a window size, preprocesses the data, and outputs the final prediction based on the two model's predictions 
+    data: dataframe to train and test with
+    arima_window: window size to aggregate data
+    mad_window: the window size to get statistics for the mad model
+    threshold: what % of the arima window the mad anomalies have to be in order to detect an anomaly on the arima_window period
     """
 
     def anomaly_ensemble(self, data, arima_window, mad_window, threshold):

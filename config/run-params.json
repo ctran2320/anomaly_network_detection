@@ -1,0 +1,13 @@
+{
+    "data_path": "data/",
+    "raw_path": "data/raw",
+    "temp_path": "data/out",
+	"log_path": "data/log",
+
+    "fig_path": "figures/",
+
+    "model_path": "models/",
+
+    "test_path": "test/"
+
+}

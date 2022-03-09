@@ -1,4 +1,5 @@
 import numpy as np 
+import matplotlib.pyplot as plt
 
 '''
 the data (x) is a 1 dimentional numpy array of the 1->2 packets
@@ -54,7 +55,6 @@ class MAD_model():
     def detect_anomaly(self, x):
         transform = self.rolling_stats(x)
         anomaly_index = []
-        thresh_l = []
         '''
         index = np.arange(len(transform))
         anomaly_index = index[(transform > self.thresh)] + self.window_size // 2
@@ -62,11 +62,6 @@ class MAD_model():
         
         for i in np.arange(len(transform) - self.window_size) + self.window_size:
             subset = transform[i:i+self.window_size]
-            
-            p25 = np.percentile(subset, 25)
-            p75 = np.percentile(subset, 75)
-            median = np.percentile(subset, 50)
-            IQR = p75 - p25
             
             thresh = 100 / (self.window_size / 100)
           
@@ -91,11 +86,12 @@ class MAD_model():
             if percent > thresh:
                 aggregation.append(i)
         return aggregation
+
     '''
     plots the data and anomolous region detected given the data and conditions
     '''
     def plot_region(self, x, conditions, shift_time=None,  filepath=None):
-        anom_region, thresh  = self.detect_anomaly(x)
+        anom_region = self.detect_anomaly(x)
         
         plt.plot(x, label='1->2pkts')
         

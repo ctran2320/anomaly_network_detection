@@ -2,9 +2,12 @@ import os
 import sys
 import json
 import pandas as pd
+import shutil
 
 sys.path.insert(0, 'src')
-#from etl import 
+from etl import *
+from ensemble_model import *
+from eda import *
 #from eda import 
 #from train import 
 from utils import convert_notebook
@@ -13,51 +16,116 @@ from os.path import isfile, join, expanduser
 from time import time
 #from metrics import 
 
+# read config
+with open('config/run-params.json') as config_json:
+    config = config_json.read()
+with open('config/ensemble-params.json') as ensemble_json:
+    ensemble_config = ensemble_json.read()
+with open('config/eda-params.json') as eda_json:
+    eda_config = eda_json.read()
+# config is now a dictionary
+config = json.loads(config)
+ensemble_config = json.loads(ensemble_config)
+eda_config = json.loads(eda_config)
+
 """
 Sets up all the directories that may have been in the .gitignore or start off empty
 """
 def init_():
-    if not os.path.isdir('data/'):
-        os.mkdir('data')
-        os.mkdir(raw_data_path)
-        os.mkdir(temp_path)
-        os.mkdir(out_path)
-    if not os.path.isdir(img_path):
-        os.mkdir(img_path)
-    if not os.path.isdir(model_path):
-        os.mkdir(model_path)
-    if not os.path.isdir('test/testtemp'):
-        os.mkdir('test/testtemp')
-    if not os.path.isdir('test/test_features'):
-        os.mkdir('test/test_features')
+    # init data folder
+    if not os.path.isdir(config['data_path']):
+        os.mkdir(config['data_path'])
+        os.mkdir(config['raw_path'])
+        os.mkdir(config['temp_path'])
+        os.mkdir(config['out_path'])
+        os.mkdir(config['log_path'])
+    if not os.path.isdir(config['fig_path']):
+        os.mkdir(config['fig_path'])
+    if not os.path.isdir(config['model_path']):
+        os.mkdir(config['model_path'])
+    if not os.path.isdir(config['test_path']):
+        os.mkdir(config['test_path'])
+        os.mkdir(join(config['test_path'], 'EDA_data'))
 
 """
 removes all temporary/output files generated in directory.
 """
 def clean_():
-    # for dr_ in [temp_path, out_path, model_path, img_path]:
-    for dr_ in [temp_path, out_path]:
-        for f in listdir(dr_):
-            remove(join(dr_, f))
+    # remove folders
+    for dir in [config['data_path'], config['fig_path']]:
+        shutil.rmtree(dir)
+    # remake deleted folders
+    init_()
 
 """
 preps the data and features, all the data in the out should be ready to be input in train
+data: a list of csv files to stitch together
+data_path: folder all of the data csvs are at
 """
-def etl_(raw_data_path=raw_data_path, temp_path=temp_path, out_path=out_path, test=False):
+def etl_(data):
     '''etl target logic. Generates temporary files that are cleaned.'''
-    ## dump featurized data into temp folder
-    data_csv_files = [join(raw_data_path, f) for f in listdir(raw_data_path)]
-    return
+    ## dump processed data into temp folder
+    return stitch_data(data)
 
 """
 generates the figures used in the report, does not include metrics
 """
-def eda_(data_folder_path=figure_data_path, img_path=img_path):
+def eda_(conditions):
+    plot_timeseries(conditions)
     return
 
-"""
-Saves trained model to pickle
-"""
-def train_(data_path=out_path, model_path=model_path, model_name='model', test=False):
-    '''trains a model to predict latency and packet loss with the output of etl and features.'''
+'''
+takes all the data listed in the config and trains the model and gives indexes of anomalies
+'''
+def train_(data_file, ARIMA_window_size, MAD_window_size, threshold):
+    df = pd.read_csv(data_file)
+    model = Ensemble()
+    predictions = model.anomaly_ensemble(df, ARIMA_window_size, MAD_window_size, threshold)
+    return predictions
+
+'''
+gets the metrics of the resulting model given a dataset and generates figures
+'''
+def metrics_():
     return
+
+def main(targets):
+
+    # goes under the assumption that all the datafiles have their latency and loss in the name
+    # cleans and adds features for all of the csv in the raw data folder
+    if 'etl' in targets or 'data' in targets:
+        """
+        data = generate_data(**data_config)
+        save_data(data, **data_config)
+        """
+        data = ['40_40_5000_a.csv', '40_40_5000_b.csv', '40_40_5000_c.csv','40_40_5000_d.csv', '40_40_5000_e.csv','40_40_5000_m.csv','40_5000_160_1250_a.csv', '40_40_5000_f.csv', '40_40_5000_g.csv', '40_5000_160_1250_b.csv','40_40_5000_h.csv', '40_40_5000_i.csv', '40_5000_160_1250_c.csv', '40_40_5000_j.csv', '40_5000_160_1250_d.csv','40_40_5000_k.csv','40_40_5000_l.csv', '40_5000_160_1250_e.csv']
+        etl_(data)
+        
+    if 'eda' in targets:
+        conditions = eda_config['conditions'] 
+        eda_(conditions)
+
+    if 'train' in targets:
+        filename = ensemble_config['data']
+        train_(filename, config['ARIMA_window_size'], 
+                         config['MAD_window_size'], 
+                         config['threshold'])
+    if 'metrics' in targets:
+        metrics_()
+        
+    if 'clean' in targets:
+        clean_()
+
+    if 'all' in targets:
+        etl_()
+        eda_()
+        train_()
+        metrics_()
+
+    else:
+        return
+
+if __name__ == '__main__':
+
+    targets = sys.argv[1:]
+    main(targets)

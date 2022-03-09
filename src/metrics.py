@@ -5,7 +5,7 @@ import pandas as pd
 import matplotlib as plt
 import numpy as np
 
-def plot_results(preds, data,anomalies, n, log=False):
+def plot_results(preds, data, anomalies, n, log=False):
     """
     Plot_results show time series graph of network traffic, predictions, and flagged anomalies on original scale or log scale.
     
