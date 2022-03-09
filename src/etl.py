@@ -3,6 +3,7 @@ import json
 import pandas as pd
 from time import time
 import os 
+import numpy as np
 from os.path import join
 
 # read config
@@ -29,12 +30,12 @@ def stitch_data(data, data_path='../data/raw', temp_path='../data/temp', out_pat
     # get total packets of each second
     df['total_pkts'] = df['1->2Pkts'] + df['2->1Pkts']
     df = df[df['total_pkts'] >1].reset_index().drop('index',axis=1)
-    df['label'] = data[0]
+    df = parse_filename(df, data[0], trim)
     # do this for each file in the data folder
     for file in data[1:]:
         dff = pd.DataFrame(pd.read_csv(join(data_path, file))[trim:]).reset_index().drop('index',axis=1)
         dff['total_pkts'] = dff['1->2Pkts'] +df['2->1Pkts']
-        dff['label'] = file
+        dff = parse_filename(dff, file, trim)
         dff = dff[dff.total_pkts > 1].reset_index().drop('index',axis=1)
         df=  pd.concat([df,dff],ignore_index=True)
 
@@ -63,3 +64,28 @@ def aggregate_data(df, n):
         df_agg = pd.concat([df_agg,pd.DataFrame([df[i:i+n]['total_pkts'].mean(),df[i:i+n].label.unique()[0]],index=['total_pkts','label']).T],ignore_index=True)
     
     return df_agg, df
+
+'''
+parses filename and returns an array of the conditions at the time, drop happens at 180-trim
+'''
+def parse_filename(df, filename, trim):
+    conditions = filename.split('_')
+    label = ''
+    for s in conditions:
+        if s.isdigit():
+            label += s + ' '
+    label = label.rstrip()
+
+    conditions = label.split()
+    if len(conditions) == 3:
+        label = f'{conditions[0]} {conditions[1]} {conditions[2]}'
+        df['label'] = label
+        df['anomaly'] = 0
+    else:
+        label_list = np.full(180-trim, f'{conditions[0]} {conditions[1]}')
+        label_list = np.append(label_list, np.full(df.shape[0] - (180-trim), f'{conditions[2]} {conditions[3]}'))
+        anomaly_list = np.full(180-trim, 0)
+        anomaly_list = np.append(anomaly_list, np.full(df.shape[0] - (180-trim), 1))
+        df['label'] = label_list
+        df['anomaly'] = anomaly_list
+    return df
