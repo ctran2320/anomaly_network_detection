@@ -1,0 +1,1 @@
+datafile: 1646808492_data.csv, window size: 20, anomalies: {100, 138, 181, 182, 251, 252, 253, 254}

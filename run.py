@@ -81,9 +81,11 @@ def eda_(conditions):
 takes all the data listed in the config and trains the model and gives indexes of anomalies
 '''
 def train_(data_file, ARIMA_window_size, MAD_window_size, threshold):
-    df = pd.read_csv(data_file)
+    df = pd.read_csv(join(config['temp_path'], data_file))
     model = Ensemble()
     predictions = model.anomaly_ensemble(df, ARIMA_window_size, MAD_window_size, threshold)
+    with open('predictions.txt', 'a') as f:
+        f.write(f'datafile: {data_file}, window size: {ARIMA_window_size}, anomalies: {predictions}')
     return predictions
 
 '''
@@ -114,10 +116,10 @@ def main(targets):
 
     if 'train' in targets:
         filename = ensemble_config['data']
-        train_(filename, config['ARIMA_window_size'], 
-                         config['MAD_window_size'], 
-                         config['threshold'])
-                         
+        train_(filename, ensemble_config['ARIMA_window_size'], 
+                         ensemble_config['MAD_window_size'], 
+                         ensemble_config['threshold'])
+
     if 'metrics' in targets:
         metrics_()
         
