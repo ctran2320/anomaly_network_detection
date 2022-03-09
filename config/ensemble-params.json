@@ -1,5 +1,5 @@
 {
-    "data":"",
+    "data":"1646806806_data.csv",
 
     "ARIMA_window_size": 20,
     "MAD_window_size": 80,

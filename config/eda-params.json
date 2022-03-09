@@ -1,7 +1,7 @@
 {
-    "conditions": "50 2500 300 1250",
+    "conditions": "50 2500 300 1250 true",
 
-    "data_path": "../test/EDA_data",
-    "outdir": "../figures",
+    "data_path": "test/EDA_data",
+    "outdir": "figures",
     "filename": "timeseries.png"
 }

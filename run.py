@@ -1,3 +1,4 @@
+from mimetypes import init
 import os
 import sys
 import json
@@ -46,6 +47,8 @@ def init_():
     if not os.path.isdir(config['test_path']):
         os.mkdir(config['test_path'])
         os.mkdir(join(config['test_path'], 'EDA_data'))
+        os.mkdir(join(config['test_path'], 'EDA_data/losslog'))
+        os.mkdir(join(config['test_path'], 'EDA_data/packet_data'))
 
 """
 removes all temporary/output files generated in directory.
@@ -90,7 +93,7 @@ def metrics_():
     return
 
 def main(targets):
-
+    init_()
     # goes under the assumption that all the datafiles have their latency and loss in the name
     # cleans and adds features for all of the csv in the raw data folder
     if 'etl' in targets or 'data' in targets:
@@ -102,17 +105,19 @@ def main(targets):
         etl_(data, config['raw_path'], 
                    config['temp_path'], 
                    config['out_path'],
-                   config['log_path'])
+                   config['log_path'],
+                   'data.csv')
         
     if 'eda' in targets:
         conditions = eda_config['conditions'] 
-        eda_(conditions, )
+        eda_(conditions)
 
     if 'train' in targets:
         filename = ensemble_config['data']
         train_(filename, config['ARIMA_window_size'], 
                          config['MAD_window_size'], 
                          config['threshold'])
+                         
     if 'metrics' in targets:
         metrics_()
         
