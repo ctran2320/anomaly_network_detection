@@ -115,12 +115,7 @@ class MAD_model():
         """
         X = np.array(data)
         anomalies_indexes = model.detect_anomaly(X)
-        
-        buffers = []
-        for i in anomalies_indexes:
-            for j in [-2,-1,0,1,2]:
-                buffers.append(i+j)
             
-        return buffers
+        return anomalies_indexes
 
 

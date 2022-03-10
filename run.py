@@ -9,6 +9,7 @@ sys.path.insert(0, 'src')
 from etl import *
 from ensemble_model import *
 from eda import *
+from metrics import *
 #from eda import 
 #from train import 
 from utils import convert_notebook
@@ -91,8 +92,11 @@ def train_(data_file, ARIMA_window_size, MAD_window_size, threshold):
 '''
 gets the metrics of the resulting model given a dataset and generates figures
 '''
-def metrics_():
-    return
+def metrics_(preds, agg_data, filename):
+    precision, recall, f1 = get_metrics(preds, agg_data, filename)
+    with open('metrics.txt', 'a') as f:
+        f.write(f'precision: {precision}, recall: {recall}, F1-score: {f1}')
+
 
 def main(targets):
     init_()
@@ -121,7 +125,14 @@ def main(targets):
                          ensemble_config['threshold'])
 
     if 'metrics' in targets:
-        metrics_()
+        filename = ensemble_config['data']
+        preds = train_(filename, ensemble_config['ARIMA_window_size'], 
+                         ensemble_config['MAD_window_size'], 
+                         ensemble_config['threshold'])
+        df = pd.read_csv(join(config['temp_path'], filename))
+        agg_data = aggregate_data(df, ensemble_config['ARIMA_window_size'])
+        outfile = 'figures/anomalies.png'
+        metrics_(preds, agg_data, outfile)
         
     if 'clean' in targets:
         clean_()

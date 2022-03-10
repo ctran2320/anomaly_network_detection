@@ -5,42 +5,57 @@ import pandas as pd
 import matplotlib as plt
 import numpy as np
 
-def plot_results(preds, data, anomalies, n, log=False):
-    """
-    Plot_results show time series graph of network traffic, predictions, and flagged anomalies on original scale or log scale.
-    
-    Arguments: 
-    preds - 
-    data - 
-    anomalies - 
-    n - 
-    log - 
-    
-    """
-    
-    preds = pd.DataFrame(preds)
-    preds['time'] = np.arange(n,len(preds)+n)
-    preds= preds.rename({0:'preds'},axis=1).set_index('time')
-    preds['anomaly'] = anomalies
-    preds['actual'] =data.total_pkts[n:]
-    anom = preds[preds.anomaly==1]
-    
-    # Returns plot on log scale
-    if log == True:
-        plt.plot(np.log(data.total_pkts),label='actual')
-        plt.plot(preds.preds,label='preds')
-        plt.scatter(anom.index,np.log(anom.actual),label='anomaly',c='r',s=100)
-        
-    # Returns plot on normal scale
-    if log == False:
-        plt.plot(data.total_pkts,label='actual')
-        plt.scatter(anom.index,anom.actual,label='anomaly',c='r',s=100)\
-        
-    # Outputs and saves graph image
-    plt.legend()
-    plt.xlabel('Time (10s)')
-    plt.ylabel('Total Packets Sent')
-    plt.title('Anomaly Detection 40-5000-320-1250 (99% CI)')
-    plt.savefig('output.png', dpi=300)
+def get_metrics(preds, aggregated_data, filepath=None):
+    # indeces where changes occure --> Positives
+    change_indices = []
+    for i in range(len(aggregated_data.anomaly)):
+        if aggregated_data.anomaly[i] == 1:
+            change_indices.append(i)
+    anomalous_sets = [] # Positive sets
+    new_set = set()
+    first = True
+    for i in range(len(aggregated_data.anomaly)):
+        if first == True:
+            if aggregated_data.anomaly[i] == 1:
+                new_set.add()
+            first = False
+        elif aggregated_data.anomaly[i] == 1:
+            new_set.add(i)
+        elif aggregated_data.anomaly[i] == 0 and aggregated_data.anomaly[i-1] == 1:
+            anomalous_sets.append(new_set)
+            new_set = set()
+    if len(new_set) != 0:
+        anomalous_sets.append(new_set)
+    # false positives
+    fp = 0
+    tn = 0
+    negative = set(range(len(aggregated_data)))
+    for s in anomalous_sets:
+        negative = negative - s
+    fp = len(preds.intersection(negative))
+    tn = len(negative - preds)
+    # false negatives and true positives
+    final_predictions = set(final_predictions)
+    fn = 0
+    tp = 0
+    for s in anomalous_sets:
+        if len(s.intersection(final_predictions)) == 0:
+            fn += 1
+        else:
+            tp += 1
+    precision = tp / (tp+fp)
+    recall = tp / (tp+fn)
+    f1 = (2*(precision*recall)) / (precision+recall)
+    # output ensemble predictions graph,
+    if filepath != None:
+        plt.plot(aggregated_data.total_pkts)
+        for i in preds:
+            plt.scatter(i, aggregated_data.total_pkts[i], color='red')
+        plt.title('Total Pkts per 20 seconds')
+        plt.xlabel('Seconds')
+        plt.ylabel('Total Pkts')
+        plt.savefig(filepath)
+
+    return precision, recall, f1
    
     
