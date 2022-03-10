@@ -2,11 +2,15 @@
 generates metrics of our model if any
 """
 import pandas as pd
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import numpy as np
 
 def get_metrics(preds, aggregated_data, filepath=None):
+    """
+    Returns model performance metrics given final predictions and training data
+    """
     # indeces where changes occure --> Positives
+
     change_indices = []
     for i in range(len(aggregated_data.anomaly)):
         if aggregated_data.anomaly[i] == 1:
@@ -26,6 +30,7 @@ def get_metrics(preds, aggregated_data, filepath=None):
             new_set = set()
     if len(new_set) != 0:
         anomalous_sets.append(new_set)
+
     # false positives
     fp = 0
     tn = 0
@@ -34,15 +39,17 @@ def get_metrics(preds, aggregated_data, filepath=None):
         negative = negative - s
     fp = len(preds.intersection(negative))
     tn = len(negative - preds)
+
     # false negatives and true positives
-    final_predictions = set(final_predictions)
+    preds = set(preds)
     fn = 0
     tp = 0
     for s in anomalous_sets:
-        if len(s.intersection(final_predictions)) == 0:
+        if len(s.intersection(preds)) == 0:
             fn += 1
         else:
             tp += 1
+
     precision = tp / (tp+fp)
     recall = tp / (tp+fn)
     f1 = (2*(precision*recall)) / (precision+recall)

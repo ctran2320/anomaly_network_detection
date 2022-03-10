@@ -56,13 +56,15 @@ df: dataframe to get n second aggregations on
 n: a paramter to change the window size of network traffic. i.e. n=20 would transform the dataset into 20 second windows
 '''
 def aggregate_data(df, n):
+
     # cuts off any remainder rows so cardinatity is divisible by n
     df = df[:len(df) - (len(df) %n)]
     # aggregate on n seconds, does it row by row
-    df_agg = pd.DataFrame([df[:n]['total_pkts'].mean(),df[:n].label.unique()[0], df[:n].anomaly.max()],index=['total_pkts','label','anomaly']).T
+    df_agg = pd.DataFrame([df[:n]['total_pkts'].mean(),df[:n].label.unique()[0], df[:n]['anomaly'].max()],index=['total_pkts','label','anomaly']).T
     for i in range(n,df.shape[0],n):
-        df_agg = pd.concat([df_agg,pd.DataFrame([df[i:i+n]['total_pkts'].mean(), df[i:i+n].label.unique()[0], df[:n].anomaly.max()], index=['total_pkts','label','anomaly']).T],ignore_index=True)
-    
+        df_agg = pd.concat([df_agg,pd.DataFrame([df[i:i+n]['total_pkts'].mean(), df[i:i+n].label.unique()[0], df[i:i+n]['anomaly'].max()], index=['total_pkts','label','anomaly']).T],ignore_index=True)
+        
+
     return df_agg, df
 
 

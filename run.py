@@ -139,7 +139,7 @@ def main(targets):
                          ensemble_config['MAD_window_size'], 
                          ensemble_config['threshold'])
         df = pd.read_csv(join(config['temp_path'], filename))
-        agg_data = aggregate_data(df, ensemble_config['ARIMA_window_size'])
+        agg_data = aggregate_data(df, ensemble_config['ARIMA_window_size'])[0]
         outfile = 'figures/anomalies.png'
         metrics_(preds, agg_data, outfile)
         
@@ -181,7 +181,7 @@ def main(targets):
                          ensemble_config['MAD_window_size'], 
                          ensemble_config['threshold'])
         df = pd.read_csv(join(config['temp_path'], filename))
-        agg_data = aggregate_data(df, ensemble_config['ARIMA_window_size'])
+        agg_data = aggregate_data(df, ensemble_config['ARIMA_window_size'])[0]
         outfile = 'figures/anomalies.png'
         metrics_(preds, agg_data, outfile)
 
