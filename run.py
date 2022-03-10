@@ -119,13 +119,22 @@ def main(targets):
         eda_(conditions)
 
     if 'train' in targets:
-        filename = ensemble_config['data']
+        # this is the filename of the output of etl in the temp folder
+        if ensemble_config['data'] == 'None':
+            files = os.listdir(config['temp_path'])
+            filename = files[0]
+        else:
+            filename = ensemble_config['data']
         train_(filename, ensemble_config['ARIMA_window_size'], 
                          ensemble_config['MAD_window_size'], 
                          ensemble_config['threshold'])
 
     if 'metrics' in targets:
-        filename = ensemble_config['data']
+        if ensemble_config['data'] == 'None':
+            files = os.listdir(config['temp_path'])
+            filename = files[0]
+        else:
+            filename = ensemble_config['data']
         preds = train_(filename, ensemble_config['ARIMA_window_size'], 
                          ensemble_config['MAD_window_size'], 
                          ensemble_config['threshold'])
@@ -138,10 +147,43 @@ def main(targets):
         clean_()
 
     if 'all' in targets:
-        etl_()
-        eda_()
-        train_()
-        metrics_()
+        # etl
+        data = ['40_40_5000_a.csv', '40_40_5000_b.csv', '40_40_5000_c.csv','40_40_5000_d.csv', '40_40_5000_e.csv','40_40_5000_m.csv','40_5000_160_1250_a.csv', '40_40_5000_f.csv', '40_40_5000_g.csv', '40_5000_160_1250_b.csv','40_40_5000_h.csv', '40_40_5000_i.csv', '40_5000_160_1250_c.csv', '40_40_5000_j.csv', '40_5000_160_1250_d.csv','40_40_5000_k.csv','40_40_5000_l.csv', '40_5000_160_1250_e.csv']
+        etl_(data, config['raw_path'], 
+            config['temp_path'], 
+            config['out_path'],
+            config['log_path'],
+            'data.csv')
+
+        # eda
+        conditions = eda_config['conditions'] 
+        eda_(conditions)
+        
+        # train
+        if ensemble_config['data'] == 'None':
+            files = os.listdir(config['temp_path'])
+            filename = files[0]
+        else:
+            filename = ensemble_config['data']
+            
+        train_(filename, ensemble_config['ARIMA_window_size'], 
+                         ensemble_config['MAD_window_size'], 
+                         ensemble_config['threshold'])
+
+        # metrics
+        if ensemble_config['data'] == 'None':
+            files = os.listdir(config['temp_path'])
+            filename = files[0]
+        else:
+            filename = ensemble_config['data']
+
+        preds = train_(filename, ensemble_config['ARIMA_window_size'], 
+                         ensemble_config['MAD_window_size'], 
+                         ensemble_config['threshold'])
+        df = pd.read_csv(join(config['temp_path'], filename))
+        agg_data = aggregate_data(df, ensemble_config['ARIMA_window_size'])
+        outfile = 'figures/anomalies.png'
+        metrics_(preds, agg_data, outfile)
 
     else:
         return
